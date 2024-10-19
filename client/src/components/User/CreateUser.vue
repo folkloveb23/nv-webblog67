@@ -1,12 +1,26 @@
 <template>
-  <div>
-    <h1>Create User</h1>
-    <form v-on:submit.prevent = "createUser">
-      <div>name: <input type="text" v-model="user.name"></div>
-      <div>lastname: <input type="text" v-model="user.lastname"></div>
-      <div>email: <input type="text" v-model="user.email"></div>
-      <div>password: <input type="password" v-model="user.password"></div>
-      <div><button type="submit">create user</button></div>
+  <div class="register-container">
+    <h1>Register</h1>
+    <form @submit.prevent="createUser" class="register-form">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" v-model="user.name" required />
+      </div>
+      <div class="form-group">
+        <label for="lastname">Last Name:</label>
+        <input type="text" id="lastname" v-model="user.lastname" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" v-model="user.email" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" v-model="user.password" required />
+      </div>
+      <div class="form-group button-container">
+        <button type="submit" class="submit-button">Create User</button>
+      </div>
     </form>
   </div>
 </template>
@@ -14,32 +28,96 @@
 <script>
 import UsersService from '../../services/UsersService';
 export default {
-  data(){
+  data() {    
     return {
-      user: {
-        name: '',
-        lastname: '',
-        email: '',
-        password: '',
-        status: 'active'
-      }
+      return: {
+      users: []
     }
   },
-  methods:{
-    async createUser(){
-      try{
+  async ;created(); {
+    try {
+      this.users = (await UsersService.index()).data;
+    } catch (err) {
+      console.log(err);
+  }
+    }
+  },
+  methods: {
+    async createUser() {
+      try {
         await UsersService.post(this.user);
         this.$router.push('/users');
-      }catch(err){
+      } catch(err) {
         console.log(err);
       }
-      
+      navigateTo(route); {
+      this.$router.push(route);
     }
+   }
   }
-
-}
+ }
 </script>
 
-<style>
+<style scoped>
+.register-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #000;
+  color: #ffcc00;
+}
 
+h1 {
+  text-align: center;
+  color: #ffcc00;
+  font-size: 24px;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  color: #ffcc00;
+  font-size: 16px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ffcc00;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.3s;
+  color: #fff;
+  background-color: #333;
+  font-size: 16px;
+}
+
+input:focus {
+  border-color: #ffcc00;
+}
+
+.submit-button {
+  background-color: #ffcc00;
+  color: #333;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: #e6b800;
+}
 </style>

@@ -2,7 +2,7 @@
   <div>
     <h1>แก้ไขข้อมูล</h1>
     <form v-on:submit.prevent="editBlog">
-      <p>ชื่อกีฬา : <input type="text" v-model="blog.title" /></p>
+      <p> กีฬา : <input type="text" v-model="blog.title" /></p>
       <transition name="fade">
         <div class="thumbnail-pic" v-if="blog.thumbnail != 'null'">
           <img :src="BASE_URL + blog.thumbnail" alt="thumbnail" />
@@ -40,7 +40,7 @@
           />
           <br />
           <button v-on:click.prevent="useThumbnail(picture.name)">
-            Thumbnail
+            upload
           </button>
           <button v-on:click.prevent="delFile(picture)">Delete</button>
         </li>
@@ -343,55 +343,116 @@ export default {
   },
 };
 </script>
-<style scoped>
-.dropbox {
-  outline: 2px dashed grey; /* the dash box */
-  outline-offset: -10px;
-  background: lemonchiffon;
-  color: dimgray;
-  padding: 10px 10px;
-  min-height: 200px; /* minimum height */
-  position: relative;
+<style scoped>div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 600px;
+  width: 100%;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1em;
+}
+button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1em;
   cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #45a049;
+}
+.dropbox {
+  outline: 2px dashed #999;
+  background-color: #f7f7f7;
+  padding: 20px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  margin-top: 15px;
+}
+.dropbox:hover {
+  background-color: #e0e0e0;
 }
 .input-file {
-  opacity: 0; /* invisible but it's there! */
+  opacity: 0;
   width: 100%;
-  height: 200px;
+  height: 100%;
   position: absolute;
   cursor: pointer;
 }
-
-.dropbox:hover {
-  background: khaki; /* when mouse over to the drop zone, change color 
-*/
-}
-
 .dropbox p {
-  font-size: 1.2em;
+  color: #666;
+  font-size: 1.1em;
   text-align: center;
-  padding: 50px 0;
 }
 ul.pictures {
   list-style: none;
   padding: 0;
   margin: 0;
-  float: left;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding-top: 20px;
 }
 ul.pictures li {
-  float: left;
+  margin: 10px;
+  text-align: center;
 }
 ul.pictures li img {
-  max-width: 180px;
-  margin-right: 20px;
+  max-width: 150px;
+  border-radius: 5px;
+  transition: transform 0.3s ease;
+}
+ul.pictures li img:hover {
+  transform: scale(1.05);
+}
+.thumbnail-pic img {
+  width: 200px;
+  border-radius: 5px;
 }
 .clearfix {
   clear: both;
 }
-/* thumbnail */
-.thumbnail-pic img {
-  width: 200px;
+@media (max-width: 768px) {
+  form {
+    padding: 15px;
+  }
+  ul.pictures li img {
+    max-width: 120px;
+  }
+  button {
+    width: 100%;
+  }
 }
 </style>

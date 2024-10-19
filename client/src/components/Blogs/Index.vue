@@ -10,7 +10,7 @@
 
             <!-- แสดงรูปภาพ Thumbnail -->
             <transition name="fade">
-                <div class="thumbnail-pic" v-if="blog.thumbnail && blog.thumbnail !== 'null'">
+                <div class="thumbnail-pic" v-if="blog.thumbnail && blog.thumbnail !== null">
                     <img :src="BASE_URL + blog.thumbnail" alt="Thumbnail" />
                 </div>
             </transition>
@@ -31,41 +31,37 @@
 
 import BlogsService from '@/services/BlogsService'
 export default {
-    data () {
-        return {
-            blogs: [],
-            BASE_URL: 'http://localhost:8081/assets/uploads/' // ตั้งค่า BASE_URL ให้ถูกต้อง
-        }
-    },
-    navigateTo (route) {
-        this.$router.push(route)
-    },
-    methods: {
-        logout () {
-            this.$store.dispatch('setToken', null)
-            this.$store.dispatch('setBlog', null)
-            this.$router.push({
-                name: 'login'
-            })
-        },
-
-        async created () {
-            this.blogs = (await BlogsService.index()).data
-            async deleteBlog (blog) {
-            let result = confirm("ต้องการลบสินค้านี้หรือไม่?")
-            if (result) {
-                try {
-                    await BlogsService.delete(blog)
-                    this.refreshData()
-                } catch (err) {
-                    console.log(err)
-                }
-            },
-            async refreshData() {
-                this.blogs = (await BlogsService.index()).data
-            }
-        }
+  data() {
+    return {
+      blogs: [],
+      BASE_URL: 'http://localhost:8081/assets/uploads/' // ตั้งค่า BASE_URL ให้ถูกต้อง
     }
+  },
+  // lifecycle hook
+  async created() {
+    this.blogs = (await BlogsService.index()).data;
+  },
+  methods: {   
+    navigateTo(route) {
+      this.$router.push(route);
+    },
+    async deleteBlog(blog) {
+      let result = confirm("ต้องการลบสินค้านี้หรือไม่?");
+      if (result) {
+        try {
+          await BlogsService.delete(blog);
+          this.refreshData();
+        } catch (err) {
+          console.log(err);
+        }
+      }
+    },
+    async refreshData() {
+      this.blogs = (await BlogsService.index()).data;
+    }
+  }
+}
+
 </script>
 <style scoped>
 .container {
