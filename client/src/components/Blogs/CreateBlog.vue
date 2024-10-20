@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h1>เพิ่มกีฬา</h1>
+    <h1>เพิ่มข้อมูล</h1>
     <form v-on:submit.prevent="createBlog">
       <p>
-        กีฬา:
+        ชื่อ
         <input type="text" v-model="blog.title" />
       </p>
       <transition name="fade">
-        <div class="thumbnail-pic" v-if="blog.thumbnail != null">
-          <img :src="BASE_URL + blog.thumbnail" alt="thumbnail" />      
+        <div class="thumbnail-pic" v-if="blog.thumbnail !== 'null'">
+          <img :src="BASE_URL + blog.thumbnail" alt="thumbnail" />
         </div>
       </transition>
       <div enctype="multipart/form-data" novalidate>
@@ -21,7 +21,7 @@
             @change="handleFileChange($event.target.files)"
             accept="image/*"
             class="input-file"
-          />        
+          />
           <p v-if="isInitial">
             Drag your file(s) here to begin<br />
             or click to browse
@@ -32,12 +32,12 @@
       </div>
       <div>
         <transition-group tag="ul" class="pictures">
-          <li v-for="picture in pictures":key="picture.id">
+          <li v-for="picture in pictures" :key="picture.id">
             <img
               style="margin-bottom: 5px"
               :src="BASE_URL + picture.name"
               alt="picture image"
-            />        
+            />
             <br />
             <button v-on:click.prevent="useThumbnail(picture.name)">
               upload
@@ -47,33 +47,26 @@
         </transition-group>
         <div class="clearfix"></div>
       </div>
-
-
+    
+  
       <p>
-        ข้อมูล :
+        ข้อมูล
         <input type="text" v-model="blog.content" />
       </p>
-      <vue-ckeditor
-        v-model.lazy="blog.content"
-        :config="config"
-        @blur="onBlur($event)"
-        @focus="onFocus($event)"
-      />
       <p>
-        ประเภท :
+        ประเภท
         <input type="text" v-model="blog.category" />
       </p>
       <p>
-        จำนวนผู้เล่น :
+        จำนวนนักกีฬา
         <input type="text" v-model="blog.status" />
       </p>
       <p>
-        <button type="submit">เพิ่มกีฬา</button>
+        <button type="submit">เพิ่มข้อมูล</button>
       </p>
     </form>
   </div>
 </template>
-
 
 <script>
 import BlogsService from "@/services/BlogsService";
@@ -134,7 +127,6 @@ export default {
         console.log(err);
       }
     },
-   
     handleFileChange(fileList) {
       const formData = new FormData();
       if (!fileList.length) return;
@@ -145,17 +137,17 @@ export default {
       this.save(formData);
     },
     async save(formData) {
-  try {
-    this.currentStatus = STATUS_SAVING;
-    await UploadService.upload(formData);
-    this.updatePictures();
-    this.clearUploadResult();
-    this.currentStatus = STATUS_SUCCESS;
-  } catch (error) {
-    console.log(error);
-    this.currentStatus = STATUS_FAILED;
-  }
-},
+      try {
+        this.currentStatus = STATUS_SAVING;
+        await UploadService.upload(formData);
+        this.currentStatus = STATUS_SUCCESS;
+        this.updatePictures();
+        this.clearUploadResult();
+      } catch (error) {
+        console.log(error);
+        this.currentStatus = STATUS_FAILED;
+      }
+    },
     updatePictures() {
       this.uploadedFileNames.forEach((uploadFilename) => {
         if (!this.pictures.some(p => p.name === uploadFilename)) {
@@ -196,11 +188,9 @@ export default {
   },
   created() {
     this.currentStatus = STATUS_INITIAL;
-
   },
 };
 </script>
-
 <style scoped>
 body {
   font-family: Arial, sans-serif;
@@ -208,11 +198,13 @@ body {
   margin: 0;
   padding: 20px;
 }
+
 h1 {
   color: #333;
   text-align: center;
   margin-bottom: 20px;
 }
+
 form {
   background-color: #ffffff;
   border-radius: 8px;
@@ -221,9 +213,11 @@ form {
   max-width: 600px;
   margin: auto;
 }
+
 p {
   margin: 15px 0;
 }
+
 input[type="text"] {
   width: 100%;
   padding: 10px;
@@ -231,6 +225,7 @@ input[type="text"] {
   border-radius: 4px;
   transition: border-color 0.3s;
 }
+
 input[type="text"]:focus {
   border-color: #80bdff;
   outline: none;
@@ -238,32 +233,26 @@ input[type="text"]:focus {
 
 .dropbox {
   outline: 2px dashed grey;
-
   outline-offset: -10px;
-
   background: lemonchiffon;
   color: dimgray;
-
-
-  padding: 20px ;
-
-  min-height: 200px; 
-
+  padding: 20px;
+  min-height: 200px;
   position: relative;
-
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.3s;
 }
+
+.dropbox:hover {
+  background: khaki;
+}
+
 .input-file {
   opacity: 0;
-
   width: 100%;
-
   height: 200px;
-
   position: absolute;
-
   cursor: pointer;
 }
 
@@ -281,19 +270,15 @@ ul.pictures {
   flex-wrap: wrap;
 }
 
+ul.pictures li {
+  margin: 10px;
+  text-align: center;
+}
+
 ul.pictures li img {
   max-width: 180px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-ul.pictures li img {
-  max-width: 180px;
-  margin-right: 20px;
-}
-
-.clearfix {
-  clear: both;
 }
 
 .thumbnail-pic img {
@@ -301,6 +286,7 @@ ul.pictures li img {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 button {
   background-color: #007bff;
   color: white;
@@ -310,8 +296,8 @@ button {
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
 button:hover {
   background-color: #0056b3;
 }
-
 </style>

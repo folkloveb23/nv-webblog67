@@ -1,10 +1,9 @@
 <template>
-    <div class="container">
+  <div class="container">
     <h1>ผู้ใช้งาน</h1>
     <div class="header-actions">
-      <button>class="btn success" v-on:click="navigateTo('/user/create')">Register</button>
+      <button class="btn success" v-on:click="navigateTo('/user/create')">Register</button>
     </div>
-  </div>
     <hr>
     <div v-if="users.length">
       <div class="user-count"><b>จำนวนผู้ใช้งาน:</b> {{ users.length }}</div>
@@ -18,6 +17,7 @@
           <button class="btn info" v-on:click="navigateTo('/user/'+user.id)">ดูข้อมูล</button>
           <button class="btn warning" v-on:click="navigateTo('/user/edit/'+user.id)">แก้ไขข้อมูล</button>
           <button class="btn danger" v-on:click="deleteUser(user)">ลบข้อมูล</button>
+        </div>
         <hr>
       </div>
     </div>
@@ -29,52 +29,44 @@
 
 <script>
 import UsersService from "@/services/UsersService";
+
 export default {
-  data(){
+  data() {
     return {
       users: []
-    }
+    };
   },
   async created() {
-    try{
+    try {
       this.users = (await UsersService.index()).data;
-    }catch(err){
+    } catch (err) {
       console.log(err);
     }
   },
-  methods:{
-    logout(){
-      this.$store.dispatch('setToken',null)
-      this.$store.dispatch('setUser',null)
-      this.$router.push({
-        name: 'login'
-      })
+  methods: {
+    logout() {
+      this.$store.dispatch('setToken', null);
+      this.$store.dispatch('setUser', null);
+      this.$router.push({ name: 'login' });
     },
-    navigateTo(route){
+    navigateTo(route) {
       this.$router.push(route);
     },
-    async deleteUser(user){
+    async deleteUser(user) {
       let result = confirm("คุณต้องการลบข้อมูลใช่หรือไม่?");
-      if(result){
-        try{
-          await UsersService.delete(user);
+      if (result) {
+        try {
+          await UsersService.delete(user.id); // ส่ง user.id แทนที่จะเป็น user ทั้งตัว
           this.refreshData();
-
-        }catch(err){
+        } catch (err) {
           console.log(err);
         }
       }
-      methods: {
-    logout(); {
-      this.$store.dispatch('setToken', null)
-      this.$store.dispatch('setUser', null)
-      this.$router.push({ name: 'login' })}
-      }
     },
-    async refreshData(){
-      try{
+    async refreshData() {
+      try {
         this.users = (await UsersService.index()).data;
-      }catch(err){
+      } catch (err) {
         console.log(err);
       }
     }

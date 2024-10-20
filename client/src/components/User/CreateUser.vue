@@ -3,19 +3,19 @@
     <h1>Register</h1>
     <form @submit.prevent="createUser" class="register-form">
       <div class="form-group">
-        <label for="name">Name:</label>
+        <label for="name">Name:</label><br>
         <input type="text" id="name" v-model="user.name" required />
       </div>
       <div class="form-group">
-        <label for="lastname">Last Name:</label>
+        <label for="lastname">Last Name:</label><br>
         <input type="text" id="lastname" v-model="user.lastname" required />
       </div>
       <div class="form-group">
-        <label for="email">Email:</label>
+        <label for="email">Email:</label><br>
         <input type="email" id="email" v-model="user.email" required />
       </div>
       <div class="form-group">
-        <label for="password">Password:</label>
+        <label for="password">Password:</label><br>
         <input type="password" id="password" v-model="user.password" required />
       </div>
       <div class="form-group button-container">
@@ -27,19 +27,19 @@
 
 <script>
 import UsersService from '../../services/UsersService';
+
 export default {
   data() {    
     return {
-      return: {
-      users: []
-    }
+      users: [],
+      user: {}
+    };
   },
-  async ;created(); {
+  async created() {
     try {
       this.users = (await UsersService.index()).data;
     } catch (err) {
       console.log(err);
-  }
     }
   },
   methods: {
@@ -47,32 +47,31 @@ export default {
       try {
         await UsersService.post(this.user);
         this.$router.push('/users');
-      } catch(err) {
+      } catch (err) {
         console.log(err);
       }
-      navigateTo(route); {
+    },
+    navigateTo(route) {
       this.$router.push(route);
     }
-   }
   }
- }
+};
 </script>
-
 <style scoped>
 .register-container {
   max-width: 400px;
   margin: 0 auto;
   padding: 40px;
-  border: 1px solid #333;
+  border: 1px solid #000000;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #000;
-  color: #ffcc00;
+  box-shadow: 0 0 10px rgb(238, 236, 236);
+  background-color: #cccc;
+  color: #cccc;
 }
 
 h1 {
   text-align: center;
-  color: #ffcc00;
+  color: #000000;
   font-size: 24px;
 }
 
@@ -87,18 +86,18 @@ h1 {
 
 label {
   font-weight: bold;
-  color: #ffcc00;
+  color: #000000;
   font-size: 16px;
 }
 
 input {
   padding: 10px;
-  border: 1px solid #ffcc00;
+  border: 1px solid #000000;
   border-radius: 4px;
   outline: none;
   transition: border-color 0.3s;
-  color: #fff;
-  background-color: #333;
+  color: #000000;
+  background-color: #ffffff;
   font-size: 16px;
 }
 

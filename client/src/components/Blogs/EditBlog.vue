@@ -2,12 +2,14 @@
   <div>
     <h1>แก้ไขข้อมูล</h1>
     <form v-on:submit.prevent="editBlog">
-      <p> กีฬา : <input type="text" v-model="blog.title" /></p>
+      <p>กีฬา: <input type="text" v-model="blog.title" /></p>
+
       <transition name="fade">
-        <div class="thumbnail-pic" v-if="blog.thumbnail != 'null'">
+        <div class="thumbnail-pic" v-if="blog.thumbnail !== 'null'">
           <img :src="BASE_URL + blog.thumbnail" alt="thumbnail" />
         </div>
       </transition>
+
       <form enctype="multipart/form-data" novalidate>
         <div class="dropbox">
           <input
@@ -15,42 +17,30 @@
             multiple
             :name="uploadFieldName"
             :disabled="isSaving"
-            @change="
-              filesChange($event.target.name, $event.target.files);
-              fileCount = $event.target.files.length;
-            "
+            @change="handleFileChange"
             accept="image/*"
             class="input-file"
           />
-          <!-- <p v-if="isInitial || isSuccess"> -->
-          <p v-if="isInitial">
-            Drag your file(s) here to begin<br />
-            or click to browse
-          </p>
-          <p v-if="isSaving">Uploading {{ fileCount }} files...</p>
-          <p v-if="isSuccess">Upload Successful.</p>
+          <p v-if="isInitial">อัปโหลดรูปที่นี่</p>
+          <p v-if="isSaving">กำลังอัปโหลด {{ fileCount }} files...</p>
+          <p v-if="isSuccess">อัปโหลดสำเร็จ</p>
         </div>
       </form>
+
       <transition-group tag="ul" class="pictures">
-        <li v-for="picture in pictures" v-bind:key="picture.id">
-          <img
-            style="margin-bottom: 5px"
-            :src="BASE_URL + picture.name"
-            alt="picture image"
-          />
+        <li v-for="picture in pictures" :key="picture.id">
+          <img :src="BASE_URL + picture.name" alt="picture image" />
           <br />
-          <button v-on:click.prevent="useThumbnail(picture.name)">
-            upload
-          </button>
-          <button v-on:click.prevent="delFile(picture)">Delete</button>
+          <button v-on:click.prevent="useThumbnail(picture.name)">อัปโหลด</button>
+          <button v-on:click.prevent="delFile(picture)">ลบ</button>
         </li>
       </transition-group>
-      <div class="clearfix"></div>
-      
-      <p>ข้อมูล : <input type="text" v-model="blog.content" /></p>
 
-      <p>ประเภท : <input type="text" v-model="blog.category" /></p>
-      <p>จำนวนผู้เล่น : <input type="text" v-model="blog.status" /></p>
+      <div class="clearfix"></div>
+
+      <p>ข้อมูล: <input type="text" v-model="blog.content" /></p>
+      <p>ประเภท: <input type="text" v-model="blog.category" /></p>
+      <p>จำนวนนักกีฬา: <input type="text" v-model="blog.status" /></p>
 
       <p>
         <button type="submit">ยืนยัน</button>
@@ -59,10 +49,11 @@
     </form>
   </div>
 </template>
+
 <script>
 import BlogsService from "@/services/BlogsService";
+import UploadService from "@/services/UploadService";
 import VueCkeditor from "vue-ckeditor2";
-import UploadService from "../../services/UploadService";
 
 const STATUS_INITIAL = 0,
   STATUS_SAVING = 1,
@@ -74,14 +65,6 @@ export default {
   data() {
     return {
       BASE_URL: "http://localhost:8081/assets/uploads/",
-      error: null,
-      // uploadedFiles: [],
-      uploadError: null,
-      currentStatus: null,
-      uploadFieldName: "userPhoto",
-      uploadedFileNames: [],
-      pictures: [],
-      pictureIndex: 0,
       blog: {
         title: "",
         thumbnail: "null",
@@ -90,6 +73,12 @@ export default {
         category: "",
         status: "",
       },
+      pictures: [],
+      pictureIndex: 0,
+      fileCount: 0,
+      currentStatus: STATUS_INITIAL,
+      uploadFieldName: "userPhoto",
+      uploadedFileNames: [],
       config: {
         toolbar: [
           ["Bold", "Italic", "Underline", "Strike", "Subscript", "Superscript"],
@@ -99,105 +88,63 @@ export default {
     };
   },
   methods: {
-    async delFile(material) {
-      let result = confirm("Want to delete?");
-      if (result) {
-        let dataJSON = {
-          filename: material.name,
-        };
-
-        await UploadService.delete(dataJSON);
-        for (var i = 0; i < this.pictures.length; i++) {
-          if (this.pictures[i].id === material.id) {
-            this.pictures.splice(i, 1);
-            this.materialIndex--;
-            break;
-          }
-        }
-      }
-    },
     async editBlog() {
       try {
         await BlogsService.put(this.blog);
-        this.$router.push({
-          name: "blogs",
-        });
+        this.$router.push({ name: "blogs" });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     },
-    onBlur(editor) {
-      console.log(editor);
+    handleFileChange(event) {
+      const files = event.target.files;
+      this.fileCount = files.length;
+      this.filesChange(event.target.name, files);
     },
-    onFocus(editor) {
-      console.log(editor);
-    },
-    navigateTo(route) {
-      console.log(route);
-      this.$router.push(route);
-    },
-    wait(ms) {
-      return (x) => {
-        return new Promise((resolve) => setTimeout(() => resolve(x), ms));
-      };
-    },
-    reset() {
-      // reset form to initial state
-      this.currentStatus = STATUS_INITIAL;
-      // this.uploadedFiles = []
-      this.uploadError = null;
-      this.uploadedFileNames = [];
+    async delFile(material) {
+      if (confirm("ต้องการลบไฟล์นี้หรือไม่?")) {
+        await UploadService.delete({ filename: material.name });
+        this.pictures = this.pictures.filter(p => p.id !== material.id);
+      }
     },
     async save(formData) {
-      // upload data to the server
       try {
         this.currentStatus = STATUS_SAVING;
         await UploadService.upload(formData);
         this.currentStatus = STATUS_SUCCESS;
 
-        // update image uploaded display
-        let pictureJSON = [];
-        this.uploadedFileNames.forEach((uploadFilename) => {
-          let found = false;
-          for (let i = 0; i < this.pictures.length; i++) {
-            if (this.pictures[i].name == uploadFilename) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
+        formData.forEach(uploadFilename => {
+          if (!this.pictures.some(p => p.name === uploadFilename)) {
             this.pictureIndex++;
-            let pictureJSON = {
-              id: this.pictureIndex,
-              name: uploadFilename,
-            };
-            this.pictures.push(pictureJSON);
+            this.pictures.push({ id: this.pictureIndex, name: uploadFilename });
           }
         });
         this.clearUploadResult();
       } catch (error) {
-        console.log(error);
+        console.error(error);
         this.currentStatus = STATUS_FAILED;
       }
     },
     filesChange(fieldName, fileList) {
-      // handle file changes
       const formData = new FormData();
       if (!fileList.length) return;
-      // append the files to FormData
-      Array.from(Array(fileList.length).keys()).map((x) => {
-        formData.append(fieldName, fileList[x], fileList[x].name);
-        this.uploadedFileNames.push(fileList[x].name);
-      });
-      // save it
+      Array.from(fileList).forEach(file =>
+        formData.append(fieldName, file, file.name)
+      );
       this.save(formData);
     },
-    clearUploadResult: function () {
+    clearUploadResult() {
       setTimeout(() => this.reset(), 5000);
     },
+    reset() {
+      this.currentStatus = STATUS_INITIAL;
+      this.uploadedFileNames = [];
+    },
     useThumbnail(filename) {
-      console.log(filename);
       this.blog.thumbnail = filename;
+    },
+    navigateTo(route) {
+      this.$router.push(route);
     },
   },
   computed: {
@@ -210,140 +157,23 @@ export default {
     isSuccess() {
       return this.currentStatus === STATUS_SUCCESS;
     },
-    isFailed() {
-      return this.currentStatus === STATUS_FAILED;
-    },
-  },
-  components: {
-    VueCkeditor,
   },
   async created() {
-    this.currentStatus = STATUS_INITIAL;
-    this.config.toolbar = [
-      {
-        name: "document",
-        items: [
-          "Source",
-          "-",
-          "Save",
-          "NewPage",
-          "Preview",
-          "Print",
-          "-",
-          "Templates",
-        ],
-      },
-      {
-        name: "clipboard",
-        items: [
-          "Cut",
-          "Copy",
-          "Paste",
-          "PasteText",
-          "PasteFromWord",
-          "-",
-          "Undo",
-          "Redo",
-        ],
-      },
-      {
-        name: "editing",
-        items: ["Find", "Replace", "-", "SelectAll", "-", "Scayt"],
-      },
-      {
-        name: "forms",
-        items: [
-          "Form",
-          "Checkbox",
-          "Radio",
-          "TextField",
-          "Textarea",
-          "Select",
-          "Button",
-          "ImageButton",
-          "HiddenField",
-        ],
-      },
-      "/",
-      {
-        name: "basicstyles",
-        items: [
-          "Bold",
-          "Italic",
-          "Underline",
-          "Strike",
-          "Subscript",
-          "Superscript",
-          "-",
-          "CopyFormatting",
-          "RemoveFormat",
-        ],
-      },
-      {
-        name: "paragraph",
-        items: [
-          "NumberedList",
-          "BulletedList",
-          "-",
-          "Outdent",
-          "Indent",
-          "-",
-          "Blockquote",
-          "CreateDiv",
-          "-",
-          "JustifyLeft",
-          "JustifyCenter",
-          "JustifyRight",
-          "JustifyBlock",
-          "-",
-          "BidiLtr",
-          "BidiRtl",
-          "Language",
-        ],
-      },
-      { name: "links", items: ["Link", "Unlink", "Anchor"] },
-      {
-        name: "insert",
-        items: [
-          "Image",
-          "Flash",
-          "Table",
-          "HorizontalRule",
-          "Smiley",
-          "SpecialChar",
-          "PageBreak",
-          "Iframe",
-          "InsertPre",
-        ],
-      },
-      "/",
-      { name: "styles", items: ["Styles", "Format", "Font", "FontSize"] },
-      { name: "colors", items: ["TextColor", "BGColor"] },
-      { name: "tools", items: ["Maximize", "ShowBlocks"] },
-      { name: "about", items: ["About"] },
-    ];
-
+    const blogId = this.$route.params.blogId;
     try {
-      let blogId = this.$route.params.blogId;
-      this.blog = (await BlogsService.show(blogId)).data;
+      const response = await BlogsService.show(blogId);
+      this.blog = response.data;
       this.pictures = JSON.parse(this.blog.pictures);
       this.pictureIndex = this.pictures.length;
     } catch (error) {
-      console.log(error);
-    }
-  },
-  async mounted() {
-    try {
-      let blogId = this.$route.params.blogId;
-      this.blog = (await BlogsService.show(blogId)).data;
-      this.pictures = JSON.parse(this.blog.pictures);
-    } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   },
 };
 </script>
-<style scoped>div {
+
+<style scoped>
+div {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -354,25 +184,23 @@ form {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  max-width: 600px;
-  width: 100%;
+  max-width: 500px;
+  width: 50%;
   background-color: #f9f9f9;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-h1 {
-  color: #333;
-  margin-bottom: 20px;
-}
-input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
+
+input[type="text"], .dropbox {
+  width: 100%; /* ให้กล่องข้อความและกล่องอัปโหลดมีขนาดเท่ากัน */
+  padding: 5px;
+  margin: 5px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 1em;
 }
+
 button {
   background-color: #4caf50;
   color: white;
@@ -387,11 +215,12 @@ button {
 button:hover {
   background-color: #45a049;
 }
+
 .dropbox {
   outline: 2px dashed #999;
   background-color: #f7f7f7;
   padding: 20px;
-  min-height: 200px;
+  min-height: 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -400,22 +229,30 @@ button:hover {
   transition: background-color 0.3s ease;
   cursor: pointer;
   margin-top: 15px;
+  position: relative; 
 }
+
 .dropbox:hover {
   background-color: #e0e0e0;
 }
+
 .input-file {
   opacity: 0;
   width: 100%;
   height: 100%;
   position: absolute;
+  top: 0;
+  left: 0;
   cursor: pointer;
+  z-index: 1; /* z-index สำหรับ input file เพื่อไม่ให้ทับกล่องข้อความ */
 }
+
 .dropbox p {
   color: #666;
   font-size: 1.1em;
   text-align: center;
 }
+
 ul.pictures {
   list-style: none;
   padding: 0;
@@ -425,25 +262,26 @@ ul.pictures {
   justify-content: center;
   padding-top: 20px;
 }
+
 ul.pictures li {
   margin: 10px;
   text-align: center;
 }
+
 ul.pictures li img {
   max-width: 150px;
   border-radius: 5px;
   transition: transform 0.3s ease;
 }
+
 ul.pictures li img:hover {
   transform: scale(1.05);
 }
-.thumbnail-pic img {
-  width: 200px;
-  border-radius: 5px;
-}
+
 .clearfix {
   clear: both;
 }
+
 @media (max-width: 768px) {
   form {
     padding: 15px;
